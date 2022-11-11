@@ -73,8 +73,8 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
 
         mImageWidth = mOptions.outWidth;
         mImageHeight = mOptions.outHeight;
-        Log.d(TAG, "mImageWidth: "+mImageWidth);
-        Log.d(TAG, "mImageHeight: "+mImageHeight);
+        Log.d(TAG, "mImageWidth: --->"+mImageWidth);
+        Log.d(TAG, "mImageHeight: --->"+mImageHeight);
         //开启内存复用
         mOptions.inMutable=true;
 
@@ -99,8 +99,8 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         mViewWidth = getMeasuredWidth();
         mViewHeight = getMeasuredHeight();
-        Log.d(TAG, "mViewWidth: "+mViewWidth);
-        Log.d(TAG, "mViewHeight: "+mViewHeight);
+        Log.d(TAG, "mViewWidth: --->"+mViewWidth);
+        Log.d(TAG, "mViewHeight:---> "+mViewHeight);
         //绑定图片加载区域
         //上边界为0
         mRect.top=0;
@@ -121,11 +121,11 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
             return;
         }
         //内存复用
-        //复用inBitmap这块的内存
+        //复用inBitmap这块的内存(每次滚动重新绘制都会复用这块内存，达到内存复用)
         mOptions.inBitmap=mBitmap;
-        Log.d(TAG, "mOptions.inBitmap--->"+mOptions.inBitmap);
+        //Log.d(TAG, "mOptions.inBitmap--->"+mOptions.inBitmap);
         mBitmap=mDecoder.decodeRegion(mRect,mOptions);
-
+        //Log.d(TAG, "mBitmap--->"+mBitmap);
         //计算缩放因子
         mScaleX = mViewWidth / (float) mImageWidth;
         Log.d(TAG, "mScaleX: "+mScaleX);
@@ -137,8 +137,47 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
         canvas.drawBitmap(mBitmap,matrix,null);
     }
 
+    //第五步 处理点击事件
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        Log.d(TAG, "onTouch: ");
+        //将Touch事件传递给手势
+        return mGestureDetector.onTouchEvent(event);
+    }
+
+    //第六步 处理手势按下事件
     @Override
     public boolean onDown(MotionEvent e) {
+        Log.d(TAG, "onDown: ");
+        //如果滑动没有停止就 强制停止
+        if(!mScroller.isFinished()){
+            mScroller.forceFinished(true);
+        }
+
+        //将事件进行传递，接收后续事件
+        return true;
+    }
+
+    //第七步 处理滑动事件
+    //e1 开始事件
+    //e2 即时事件也就是滑动时
+    @Override
+    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+        Log.d(TAG, "onScroll----->distanceY--->: "+distanceY);
+        Log.d(TAG, "onScroll----->mImageHeight--->: "+mImageHeight);
+        //上下滑动时，直接改变Rect的显示区域
+        mRect.offset(0,(int) distanceY);//上下滑动只需要改变Y轴
+        //判断到顶和到底的情况
+        if(mRect.bottom>mImageHeight){//滑到最底
+            mRect.bottom=mImageHeight;
+            mRect.top=mImageHeight-mViewHeight;
+        }
+        Log.d(TAG, "mRect.top: "+mRect.top);
+        if(mRect.top<0){//滑到最顶
+            mRect.top=0;
+            mRect.bottom=mViewHeight;
+        }
+        invalidate();
         return false;
     }
 
@@ -153,11 +192,6 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
     }
 
     @Override
-    public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-        return false;
-    }
-
-    @Override
     public void onLongPress(MotionEvent e) {
 
     }
@@ -167,8 +201,5 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
         return false;
     }
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        return false;
-    }
+
 }

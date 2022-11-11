@@ -18,7 +18,7 @@ public class MainActivity extends AppCompatActivity {
         BigView bigView= findViewById(R.id.bigView);
         InputStream is=null;
         try {
-            is= getResources().getAssets().open("picture.jpg");
+            is= getResources().getAssets().open("bigpicture.jpg");
             bigView.setImage(is);
         } catch (IOException e) {
             e.printStackTrace();
