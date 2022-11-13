@@ -13,9 +13,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Scroller;
-
 import androidx.annotation.Nullable;
-
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -158,7 +156,7 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
         return true;
     }
 
-    //第七步 处理滑动事件
+    //第七步 处理滑动事件(手势)指手势的拖动
     //e1 开始事件
     //e2 即时事件也就是滑动时
     @Override
@@ -181,6 +179,38 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
         return false;
     }
 
+
+    //第八步 处理惯性问题(手势)指手势的滑动
+    @Override
+    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        Log.d(TAG, "onFling: ");
+        //velocityY表示Y轴的惯性值，startX和startY为滑动的开始位置,minY和maxY为滑动距离的最小值和最大值
+        Log.d(TAG, "onFling: mRect.top -->"+mRect.top);
+        mScroller.fling(0,mRect.top,0,(int) -velocityY,0,0,0,mImageHeight-mViewHeight);
+        Log.d(TAG, "velocityY: "+velocityY);
+        Log.d(TAG, "mRect.top");
+        return false;
+    }
+
+    //该方法可以获取当前的滚动值
+    @Override
+    public void computeScroll() {
+        super.computeScroll();
+        Log.d(TAG, "computeScroll: ");
+        //如果没有滚动，直接返回即可
+        if(mScroller.isFinished()){
+            return;
+        }
+        //如果已经滚动到新位置返回true
+        if(mScroller.computeScrollOffset()){
+            mRect.top=mScroller.getCurrY();
+            Log.d(TAG, "computeScroll:mRect.top "+mRect.top);
+            mRect.bottom=mImageHeight-mViewHeight+mRect.top;//底部边框等于更新的top位置加上
+            Log.d(TAG, "computeScroll:mRect.bottom "+mRect.bottom);
+        }
+        invalidate();
+    }
+
     @Override
     public void onShowPress(MotionEvent e) {
 
@@ -196,10 +226,7 @@ public class BigView extends View implements GestureDetector.OnGestureListener, 
 
     }
 
-    @Override
-    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-        return false;
-    }
+
 
 
 }
