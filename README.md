@@ -23,5 +23,5 @@
     private float mScale;
 ### 6、在onDraw(...)做对应的缩放和区域滑动
 
-
+### 效果图
 ![bigView](https://github.com/Chen-Yi-Ran/AndroidOptimize/assets/76609982/5340737e-98f9-471c-89ad-0fee6e8ee0ab)
